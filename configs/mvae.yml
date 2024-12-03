@@ -1,0 +1,46 @@
+defaults:
+  - _self_
+
+modalities:
+  encoders:
+    - _target_: ml.mopoe.ModalityCNNEncoder
+      modality: "T1w"
+      channels: [32, 64]
+      filters: [3, 3]
+      strides: [2, 2]
+      activations: ["relu", "relu"]
+  decoders:
+    - _target_: ml.mopoe.ModalityCNNDecoder
+      modality: "T1w"
+      channels: [32]
+      filters: [3]
+      strides: [2]
+      activations: ["relu"]
+
+network_config:
+  latent_dim: 128
+  prior: [0, 1]
+  cond_shape: 2 # Sex and age
+
+train_config:
+  batch_size: 16
+  epochs: 10
+  learning_rate: 0.001
+  n_splits: 5
+  beta_kl: 1
+  base_dir: "/mnt/d/Programmazione/Progetti/phd/mopoe_test"
+  log_dir: "logs"
+  chkpt_dir: "checkpoints"
+  dataset_directory: "/mnt/d/Programmazione/Progetti/phd/data/dataset/lmdb/dataset"
+
+multigpu:
+  devices: 1
+  accelerator: "auto"
+
+data_config:
+  - _target_: ml.core.configuration.ModalityConfig
+    modality: "T1w"
+    shape: [1, 240, 240]
+    flip: True
+    rotate: 10
+    

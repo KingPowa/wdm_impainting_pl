@@ -1,0 +1,109 @@
+import torch
+from typing import Tuple
+from collections.abc import Collection
+from datetime import datetime
+
+def get_timestamp():
+    return datetime.timestamp(datetime.now())
+
+def calculate_output_shape(input_shape: Collection[int], 
+                           kernel_size: int | Tuple[int, int], 
+                           stride: int | Tuple[int, int]=1, 
+                           padding: int | Tuple[int, int]=0, 
+                           dilation: int =1, out_channels: int =None):
+    """
+    Calculate the output shape after a convolutional layer.
+    
+    Args:
+        input_shape (tuple): The shape of the input image (batch_size, channels, height, width) or (channels, height, width).
+        kernel_size (int or tuple): The size of the convolutional kernel.
+        stride (int or tuple): The stride of the convolution. Default is 1.
+        padding (int or tuple): The padding applied to the input. Default is 0.
+        dilation (int): The dilation rate of the kernel. Default is 1.
+        out_channels (int): The number of output channels (number of filters). Required for the number of channels in the output.
+    
+    Returns:
+        tuple: The shape of the output image.
+    """
+    
+    if len(input_shape) == 4:  # Batch size present
+        batch_size, in_channels, height, width = input_shape
+    elif len(input_shape) == 3:  # No batch size
+        in_channels, height, width = input_shape
+        batch_size = None
+    else:
+        raise ValueError("Invalid input shape. Must be of length 3 or 4.")
+    
+    if isinstance(kernel_size, int):
+        kernel_size = (kernel_size, kernel_size)
+    if isinstance(stride, int):
+        stride = (stride, stride)
+    if isinstance(padding, int):
+        padding = (padding, padding)
+    
+    # Output height and width calculation
+    output_height = (height + 2 * padding[0] - dilation * (kernel_size[0] - 1) - 1) // stride[0] + 1
+    output_width = (width + 2 * padding[1] - dilation * (kernel_size[1] - 1) - 1) // stride[1] + 1
+    
+    if out_channels is None:
+        out_channels = in_channels  # If not provided, keep the same number of channels
+    
+    # Return the output shape
+    if batch_size is not None:
+        return (batch_size, out_channels, output_height, output_width)
+    else:
+        return (out_channels, output_height, output_width)
+    
+
+def calculate_transpose_conv_output_shape(input_shape, kernel_size, stride=1, padding=0, output_padding=0, dilation=1, out_channels=None):
+    """
+    Calculate the output shape after a transposed convolutional (ConvTranspose) layer.
+    
+    Args:
+        input_shape (tuple): The shape of the input image (batch_size, channels, height, width) or (channels, height, width).
+        kernel_size (int or tuple): The size of the convolutional kernel.
+        stride (int or tuple): The stride of the convolution. Default is 1.
+        padding (int or tuple): The padding applied to the input. Default is 0.
+        output_padding (int or tuple): Additional size added to the output shape. Default is 0.
+        dilation (int): The dilation rate of the kernel. Default is 1.
+        out_channels (int): The number of output channels (number of filters). Required for the number of channels in the output.
+    
+    Returns:
+        tuple: The shape of the output image.
+    """
+    
+    if len(input_shape) == 4:  # Batch size present
+        batch_size, in_channels, height, width = input_shape
+    elif len(input_shape) == 3:  # No batch size
+        in_channels, height, width = input_shape
+        batch_size = None
+    else:
+        raise ValueError("Invalid input shape. Must be of length 3 or 4.")
+    
+    if isinstance(kernel_size, int):
+        kernel_size = (kernel_size, kernel_size)
+    if isinstance(stride, int):
+        stride = (stride, stride)
+    if isinstance(padding, int):
+        padding = (padding, padding)
+    if isinstance(output_padding, int):
+        output_padding = (output_padding, output_padding)
+    
+    # Output height and width calculation for ConvTranspose
+    output_height = (height - 1) * stride[0] - 2 * padding[0] + dilation * (kernel_size[0] - 1) + 1 + output_padding[0]
+    output_width = (width - 1) * stride[1] - 2 * padding[1] + dilation * (kernel_size[1] - 1) + 1 + output_padding[1]
+    
+    if out_channels is None:
+        out_channels = in_channels  # If not provided, keep the same number of channels
+    
+    # Return the output shape
+    if batch_size is not None:
+        return (batch_size, out_channels, output_height, output_width)
+    else:
+        return (out_channels, output_height, output_width)
+    
+def reparametrize(mu: torch.Tensor, var: torch.Tensor, log=False):
+
+    std = var.mul(0.5).exp_() if log else var.mul(0.5)
+    eps = std.data.new(std.size()).normal_()
+    return eps.mul(std).add_(mu)
