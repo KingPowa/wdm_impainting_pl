@@ -7,7 +7,7 @@ from torch.nn import Module
 from typing import Optional
 from collections.abc import Collection
 
-from ml.core.datasets import MRIDataset, LMDBDatasetConfig
+from ml.core.datasets.datasets import MRIDataset, LMDBDatasetConfig
 
 class MRIDataloader(LightningDataModule):
 

@@ -141,3 +141,24 @@ class MRIDataset(LMDBDataset):
         sex_binary = 0 if sex == 'M' else 1
 
         return slice, torch.tensor([normalized_age, sex_binary])
+    
+class MRIMaskedDataset(LMDBDataset):
+
+    def __init__(self, config: LMDBDatasetConfig, max_age: float, min_age: float = 0, ):
+        super().__init__(config=config)
+        self.min_age = min_age
+        self.max_age = max_age
+
+    def __getitem__(self, index: int):
+        slice, age, sex = super(MRIMaskedDataset, self).__getitem__(index)
+
+        # Slice is Modalities x Channels x Width X Length. We add 1 x W x L to Channels
+        # Normalize the integer value
+        normalized_age = (age - self.min_age) / (self.max_age - self.min_age)
+
+        # Convert gender to binary (0 for M, 1 for F)
+        sex_binary = 0 if sex == 'M' else 1
+
+        mask = 
+
+        return slice, torch.tensor([normalized_age, sex_binary])

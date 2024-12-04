@@ -3,7 +3,7 @@ from sklearn.model_selection import KFold
 from pytorch_lightning import Trainer, LightningModule
 from logging import Logger
 
-from ml.core.dataloaders import MRIHoldoutDataLoader, MRIKFoldDataLoader
+from ml.core.dataloaders.dataloaders import MRIHoldoutDataLoader, MRIKFoldDataLoader
 from ml.core.configuration import *
 from ml.core.logging import AdvancedWandLogger, AdvancedModelCheckpoint, Session
 
