@@ -576,19 +576,19 @@ class GaussianDiffusion:
         progress=False,
         classifier=None
     ):
-        # if device is None:
-        #     device = next(model.parameters()).device
+        if device is None:
+            device = next(model.parameters()).device
         assert isinstance(shape, (tuple, list))
         b = shape[0]
 
 
-        t = th.randint(499,500, (b,)).long()#, device=device).long().to(device)
+        t = th.randint(499,500, (b,), device=device).long().to(device)
 
-        org=img[0]#.to(device)
-        img=img[0]#.to(device)
+        org=img[0].to(device)
+        img=img[0].to(device)
         indices = list(range(t))[::-1]
-        noise = th.randn_like(img[:, :4, ...])#.to(device)
-        x_noisy = self.q_sample(x_start=img[:, :4, ...], t=t, noise=noise)#.to(device)
+        noise = th.randn_like(img[:, :4, ...]).to(device)
+        x_noisy = self.q_sample(x_start=img[:, :4, ...], t=t, noise=noise).to(device)
         x_noisy = torch.cat((x_noisy, img[:, 4:, ...]), dim=1)
         
         
@@ -625,16 +625,16 @@ class GaussianDiffusion:
         device=None,
         progress=False,
     ):
-        # if device is None:
-        #     device = next(model.parameters()).device
+        if device is None:
+            device = next(model.parameters()).device
         assert isinstance(shape, (tuple, list))
         b = shape[0]
-        t = th.randint(299,300, (b,)).long()#.to(device)
-        img1=torch.tensor(img1)#.to(device)
-        img2 = torch.tensor(img2)#.to(device)
-        noise = th.randn_like(img1)#.to(device)
-        x_noisy1 = self.q_sample(x_start=img1, t=t, noise=noise)#.to(device)
-        x_noisy2 = self.q_sample(x_start=img2, t=t, noise=noise)#.to(device)
+        t = th.randint(299,300, (b,), device=device).long().to(device)
+        img1=torch.tensor(img1).to(device)
+        img2 = torch.tensor(img2).to(device)
+        noise = th.randn_like(img1).to(device)
+        x_noisy1 = self.q_sample(x_start=img1, t=t, noise=noise).to(device)
+        x_noisy2 = self.q_sample(x_start=img2, t=t, noise=noise).to(device)
         interpol=lambdaint*x_noisy1+(1-lambdaint)*x_noisy2
         for sample in self.p_sample_loop_progressive(
             model,
@@ -682,8 +682,8 @@ class GaussianDiffusion:
         # Changed: For the conditional generation, if label_cond_dwt is not None, the generated part (outside of the ROI) is replaced by the original input
         """
 
-        # if device is None:
-        #     device = next(model.parameters()).device
+        if device is None:
+            device = next(model.parameters()).device
         assert isinstance(shape, (tuple, list))
         if noise is not None:
             img = noise # this noise is already noise_dwt
@@ -1015,8 +1015,8 @@ class GaussianDiffusion:
             if REPAINT: ## Didn't work well :(
                 FROM_REVERSE = False
                 for t_now, t_next in times:
-                    t_now = th.tensor([t_now] * shape[0])#, device=device)
-                    t_next = th.tensor([t_next] * shape[0])#, device=device)
+                    t_now = th.tensor([t_now] * shape[0], device=device)
+                    t_next = th.tensor([t_next] * shape[0], device=device)
                     if t_now.item()==-1:
                         break
                     if t_now.item() > t_next.item():
@@ -1072,7 +1072,7 @@ class GaussianDiffusion:
 
             else: 
                 for t in times:
-                    t = th.tensor([t] * shape[0])#, device=device)
+                    t = th.tensor([t] * shape[0], device=device)
                     
                     if train_mode=="Conditional_default":
                         # Adding noise to the known region for the next step (t-1)
@@ -1122,8 +1122,8 @@ class GaussianDiffusion:
             if REPAINT:
                 FROM_REVERSE = False
                 for t_now, t_next in times:
-                    t_now = th.tensor([t_now] * shape[0])#, device=device)
-                    t_next = th.tensor([t_next] * shape[0])#, device=device)
+                    t_now = th.tensor([t_now] * shape[0], device=device)
+                    t_next = th.tensor([t_next] * shape[0], device=device)
                     print(t_now)
                     if t_now.item()==-1:
                         break
@@ -1220,7 +1220,7 @@ class GaussianDiffusion:
 
             else:
                 for i in times:
-                    t = th.tensor([i] * shape[0])#, device=device)
+                    t = th.tensor([i] * shape[0], device=device)
 
                     if USE_LABEL_DILATED:
                         low_label_cond = interpolate(
@@ -1353,7 +1353,7 @@ class GaussianDiffusion:
                 * ((1 - alpha_bar_prev_orig) / (1 - alpha_bar_orig))**.5
                 * (1 - alpha_bar_orig / alpha_bar_prev_orig)**.5
         )
-        noise = th.randn(size=shape)#, device=x.device)
+        noise = th.randn(size=shape, device=x.device)
         mean_pred = (
                 out["pred_xstart"] * alpha_bar_prev_orig**.5
                 + (1 - alpha_bar_prev_orig - sigma ** 2)**.5 * eps_orig
@@ -1419,16 +1419,16 @@ class GaussianDiffusion:
         device=None,
         progress=False,
     ):
-        # if device is None:
-        #     device = next(model.parameters()).device
+        if device is None:
+            device = next(model.parameters()).device
         assert isinstance(shape, (tuple, list))
         b = shape[0]
-        t = th.randint(199,200, (b,))#, device=device).long().to(device)
-        img1=torch.tensor(img1)#.to(device)
-        img2 = torch.tensor(img2)#.to(device)
-        noise = th.randn_like(img1)#.to(device)
-        x_noisy1 = self.q_sample(x_start=img1, t=t, noise=noise)#.to(device)
-        x_noisy2 = self.q_sample(x_start=img2, t=t, noise=noise)#.to(device)
+        t = th.randint(199,200, (b,), device=device).long().to(device)
+        img1=torch.tensor(img1).to(device)
+        img2 = torch.tensor(img2).to(device)
+        noise = th.randn_like(img1).to(device)
+        x_noisy1 = self.q_sample(x_start=img1, t=t, noise=noise).to(device)
+        x_noisy2 = self.q_sample(x_start=img2, t=t, noise=noise).to(device)
         interpol=lambdaint*x_noisy1+(1-lambdaint)*x_noisy2
         for sample in self.ddim_sample_loop_progressive(
             model,
@@ -1465,8 +1465,8 @@ class GaussianDiffusion:
         Same usage as p_sample_loop().
         """
         final = None
-        # if device is None:
-        #     device = next(model.parameters()).device
+        if device is None:
+            device = next(model.parameters()).device
         assert isinstance(shape, (tuple, list))
         b = shape[0]
         #t = th.randint(0,1, (b,), device=device).long().to(device)
@@ -1511,12 +1511,12 @@ class GaussianDiffusion:
             eta=0.0,
             sampling_steps=0,
     ):
-        # if device is None:
-        #     device = next(model.parameters()).device
+        if device is None:
+            device = next(model.parameters()).device
         assert isinstance(shape, (tuple, list))
         b = shape[0]
-        t = th.randint(0,1, (b,)).long()#.to(device)
-        #img = img.to(device)
+        t = th.randint(0,1, (b,), device=device).long().to(device)
+        img = img.to(device)
         
         indices = list(range(t))[::-1]
         if mode == 'segmentation':
@@ -1572,17 +1572,17 @@ class GaussianDiffusion:
 
         Same usage as p_sample_loop_progressive().
         """
-        # if device is None:
-        #     device = next(model.parameters()).device
+        if device is None:
+            device = next(model.parameters()).device
         assert isinstance(shape, (tuple, list))
         if noise is not None:
             img = noise
         else:
             if segmentation_img is None:  # normal sampling
-                img = th.randn(*shape)#, device=device)
+                img = th.randn(*shape, device=device)
             else:                         # segmentation mode
-                label_shape = (segmentation_img.shape[0], model.out_channels)#, *segmentation_img.shape[2:])
-                img = th.randn(label_shape, dtype=segmentation_img.dtype)#, device=segmentation_img.device)
+                label_shape = (segmentation_img.shape[0], model.out_channels, *segmentation_img.shape[2:])
+                img = th.randn(label_shape, dtype=segmentation_img.dtype, device=segmentation_img.device)
 
         indices = list(range(time))[::-1] # klappt nur für batch_size == 1
 
@@ -1605,8 +1605,8 @@ class GaussianDiffusion:
             if segmentation_img is not None:
                 prev_img = img
                 img = th.cat((segmentation_img, img), dim=1)
-            t = th.tensor([i] * shape[0])#, device=device)
-            t_prev = th.tensor([i_prev] * shape[0])#, device=device)
+            t = th.tensor([i] * shape[0], device=device)
+            t_prev = th.tensor([i_prev] * shape[0], device=device)
             with th.no_grad():
                 out = self.ddim_sample(
                    model,
@@ -1775,7 +1775,7 @@ class GaussianDiffusion:
             fake_tumour = label_cond * model_output_idwt 
             label_cond_loss = th.mean(mean_flat((real_tumour - fake_tumour) ** 2), dim=0)
             stats_loss = self.local_intensity_stats_loss_inpainted(model_output_idwt, x_start, mask=label_cond, kernel_size=3)
-            #stats_loss = stats_loss.to(x_start.device)
+            stats_loss = stats_loss.to(x_start.device)
             terms = {"mse_loss": th.mean(mean_flat((x_start - model_output_idwt) ** 2), dim=0), "mse_label_cond": label_cond_loss, "stats_loss": stats_loss} # Using full resolution volumes to compute loss
         else:
             print(f"MODE: {mode}")
@@ -1797,7 +1797,7 @@ class GaussianDiffusion:
         :return: a batch of [N] KL values (in bits), one per batch element.
         """
         batch_size = x_start.shape[0]
-        t = th.tensor([self.num_timesteps - 1] * batch_size)#, device=x_start.device)
+        t = th.tensor([self.num_timesteps - 1] * batch_size, device=x_start.device)
         qt_mean, _, qt_log_variance = self.q_mean_variance(x_start, t)
         kl_prior = normal_kl(
             mean1=qt_mean, logvar1=qt_log_variance, mean2=0.0, logvar2=0.0
@@ -1822,14 +1822,14 @@ class GaussianDiffusion:
                  - xstart_mse: an [N x T] tensor of x_0 MSEs for each timestep.
                  - mse: an [N x T] tensor of epsilon MSEs for each timestep.
         """
-        #device = x_start.device
+        device = x_start.device
         batch_size = x_start.shape[0]
 
         vb = []
         xstart_mse = []
         mse = []
         for t in list(range(self.num_timesteps))[::-1]:
-            t_batch = th.tensor([t] * batch_size)#, device=device)
+            t_batch = th.tensor([t] * batch_size, device=device)
             noise = th.randn_like(x_start)
             x_t = self.q_sample(x_start=x_start, t=t_batch, noise=noise)
 
@@ -1873,7 +1873,7 @@ def _extract_into_tensor(arr, timesteps, broadcast_shape):
                             dimension equal to the length of timesteps.
     :return: a tensor of shape [batch_size, 1, ...] where the shape has K dims.
     """
-    res = th.from_numpy(arr)[timesteps].float()#.to(device=timesteps.device)[timesteps].float()
+    res = th.from_numpy(arr).to(device=timesteps.device)[timesteps].float()
     while len(res.shape) < len(broadcast_shape):
         res = res[..., None]
     return res.expand(broadcast_shape)
