@@ -2,6 +2,9 @@ import torch
 from typing import Tuple
 from collections.abc import Collection
 from datetime import datetime
+import numpy as np
+from noise import pnoise2
+from scipy.ndimage import gaussian_filter
 
 def get_timestamp():
     return datetime.timestamp(datetime.now())
@@ -107,3 +110,49 @@ def reparametrize(mu: torch.Tensor, var: torch.Tensor, log=False):
     std = var.mul(0.5).exp_() if log else var.mul(0.5)
     eps = std.data.new(std.size()).normal_()
     return eps.mul(std).add_(mu)
+
+from scipy.ndimage import gaussian_filter
+
+def generate_perlin_mask_with_contour_smoothing(image_size, scale=100, octaves=4, persistence=0.5, lacunarity=2.0, threshold=0.0, sigma=2.0, seed=123):
+    """
+    Generate a binary mask with smooth contours using Perlin noise.
+
+    Parameters:
+        image_size (tuple): Size of the image (height, width).
+        scale (float): Scale of the noise (higher values zoom out the noise pattern).
+        octaves (int): Number of noise layers blended together for detail.
+        persistence (float): Controls amplitude of octaves (higher = more detail).
+        lacunarity (float): Controls frequency of octaves (higher = more detail).
+        threshold (float): Threshold to create a binary mask.
+        sigma (float): Standard deviation for Gaussian smoothing.
+        seed (int): seed controlling perlin noise generation, for deterministically generate it.
+
+    Returns:
+        np.ndarray: Binary mask (0 or 1) with smooth contours.
+    """
+    height, width = image_size
+    noise_grid = np.zeros((height, width))
+    
+    # Generate Perlin noise
+    for y in range(height):
+        for x in range(width):
+            noise_value = pnoise2(x / scale, 
+                                  y / scale, 
+                                  octaves=octaves, 
+                                  persistence=persistence, 
+                                  lacunarity=lacunarity, 
+                                  repeatx=width, 
+                                  repeaty=height, 
+                                  base=seed)  # Seed for reproducibility
+            noise_grid[y, x] = noise_value
+    
+    # Normalize noise values to range 0-1
+    noise_grid = (noise_grid - noise_grid.min()) / (noise_grid.max() - noise_grid.min())
+    
+    # Apply Gaussian smoothing to the noise grid
+    smoothed_noise = gaussian_filter(noise_grid, sigma=sigma)
+    
+    # Apply threshold to create a binary mask
+    binary_mask = (smoothed_noise > threshold).astype(np.uint8)
+    
+    return binary_mask
