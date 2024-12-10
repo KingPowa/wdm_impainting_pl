@@ -4,7 +4,7 @@ from pytorch_lightning.loggers import WandbLogger
 from pytorch_lightning.callbacks import ModelCheckpoint
 from omegaconf import DictConfig
 
-from ml.core.utils import get_timestamp
+from ml.core.utils.etc import get_timestamp
 
 class Session:
 

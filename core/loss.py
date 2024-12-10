@@ -5,8 +5,6 @@ import torch.nn.functional as F
 from collections.abc import Collection
 from typing import Tuple
 
-from ml.core.utils import reparametrize
-
 def elbo_loss(inputs, outputs, subset_params, mopoe_params, prior_mean, prior_logvar, beta):
     """
     Compute the ELBO loss as per the formula in the image.

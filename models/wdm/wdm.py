@@ -7,9 +7,9 @@ import torch.utils.tensorboard
 from torch.optim import AdamW
 from pytorch_lightning import LightningModule
 
-import logger
-from diffusion.diffproc import SpacedDiffusion
-from diffusion.sampler import LossAwareSampler, UniformSampler, ScheduleSampler
+import ml.models.wdm.logger as logger
+from .diffusion.diffproc import SpacedDiffusion
+from .diffusion.sampler import LossAwareSampler, UniformSampler, ScheduleSampler
 
 NAMES = ["LLL", "LLH", "LHL", "LHH", "HLL", "HLH", "HHL", "HHH"]
 INITIAL_LOG_LOSS_SCALE = 20.0
@@ -27,7 +27,6 @@ class WDM(LightningModule):
         img_log_interval: int,
         lr: float,
         log_interval: int,
-        save_interval: int,
         schedule_sampler : ScheduleSampler = None,
         weight_decay: float = 0.0,
         mode : str = 'default',
@@ -38,7 +37,7 @@ class WDM(LightningModule):
         
         super(WDM, self).__init__()
 
-        self.save_hyperparameters()
+        self.save_hyperparameters(ignore=['model'])
         
         # This is the training modalityf
         self.mode = mode
@@ -64,7 +63,6 @@ class WDM(LightningModule):
 
         self.log_interval = log_interval
         self.img_log_interval = img_log_interval
-        self.save_interval = save_interval
         
         # Automatic PL checkpoint
         # self.resume_checkpoint = resume_checkpoint
@@ -102,28 +100,12 @@ class WDM(LightningModule):
     def training_step(self, batch, batch_idx):
         t_total = time.time() - self.t
         self.t = time.time()
-        image, cond = batch
-
-        if self.mode=="Conditional_always_known_only_healthy":
-            mask_unhealthy = batch["mask_unhealthy"]
-            image = image * (1-mask_unhealthy) # Only healthy tissue
-
-        if self.use_label_cond==True:
-            label_cond = batch["mask_healthy"]  
-            if self.use_label_cond_dilated:
-                if self.mode=="Conditional_default":
-                    raise ValueError(f"use_label_cond_dilated={self.use_label_cond_dilated} Cannot be used with mode Mode {self.mode}. Use other mode of use use_label_cond_dilated=False")
-                label_cond_dilated = batch["mask_healthy_dilated"]
-            else:
-                label_cond_dilated = None
-        else:
-            label_cond = None
-            label_cond_dilated = None
+        image, mask, cond = batch
 
         t_fwd = time.time()
         t_load = t_fwd - self.t
 
-        lossmse, sample, sample_idwt = self._step(image, cond, label_cond=label_cond, label_cond_dilated=label_cond_dilated)
+        lossmse, sample, sample_idwt = self._step(image, cond, label_cond=mask, label_cond_dilated=None)
 
         t_fwd = time.time()-t_fwd
 

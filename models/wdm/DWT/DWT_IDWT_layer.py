@@ -41,7 +41,7 @@ class DWT_1D(Module):
         self.band_length_half = math.floor(self.band_length / 2)
 
     def get_matrix(self):
-        """
+        r"""
         生成变换矩阵
         generating the matrices: \mathcal{L}, \mathcal{H}
         :return: self.matrix_low = \mathcal{L}, self.matrix_high = \mathcal{H}
@@ -72,7 +72,7 @@ class DWT_1D(Module):
             self.matrix_high = torch.Tensor(matrix_g)
 
     def forward(self, input):
-        """
+        r"""
         input_low_frequency_component = \mathcal{L} * input
         input_high_frequency_component = \mathcal{H} * input
         :param input: the data to be decomposed
@@ -85,14 +85,14 @@ class DWT_1D(Module):
 
 
 class IDWT_1D(Module):
-    """
+    r"""
     input:  lfc -- (N, C, Length/2)
             hfc -- (N, C, Length/2)
     output: the original data -- (N, C, Length)
     """
 
     def __init__(self, wavename):
-        """
+        r"""
         1D inverse DWT (IDWT) for sequence reconstruction
         用于序列重构的一维离散小波逆变换 IDWT
         :param wavename: pywt.wavelist(); in the paper, 'chx.y' denotes 'biorx.y'.
@@ -109,7 +109,7 @@ class IDWT_1D(Module):
         self.band_length_half = math.floor(self.band_length / 2)
 
     def get_matrix(self):
-        """
+        r"""
         generating the matrices: \mathcal{L}, \mathcal{H}
         生成变换矩阵
         :return: self.matrix_low = \mathcal{L}, self.matrix_high = \mathcal{H}
@@ -140,7 +140,7 @@ class IDWT_1D(Module):
             self.matrix_high = torch.Tensor(matrix_g)
 
     def forward(self, L, H):
-        """
+        r"""
         :param L: the low-frequency component of the original data
         :param H: the high-frequency component of the original data
         :return: the original data
@@ -152,7 +152,7 @@ class IDWT_1D(Module):
 
 
 class DWT_2D_tiny(Module):
-    """
+    r"""
     input: the 2D data to be decomposed -- (N, C, H, W)
     output -- lfc: (N, C, H/2, W/2)
               #hfc_lh: (N, C, H/2, W/2)
@@ -177,7 +177,7 @@ class DWT_2D_tiny(Module):
         self.band_length_half = math.floor(self.band_length / 2)
 
     def get_matrix(self):
-        """
+        r"""
         生成变换矩阵
         generating the matrices: \mathcal{L}, \mathcal{H}
         :return: self.matrix_low = \mathcal{L}, self.matrix_high = \mathcal{H}
@@ -228,7 +228,7 @@ class DWT_2D_tiny(Module):
             self.matrix_high_1 = torch.Tensor(matrix_g_1)
 
     def forward(self, input):
-        """
+        r"""
         input_lfc = \mathcal{L} * input * \mathcal{L}^T
         #input_hfc_lh = \mathcal{H} * input * \mathcal{L}^T
         #input_hfc_hl = \mathcal{L} * input * \mathcal{H}^T
@@ -244,7 +244,7 @@ class DWT_2D_tiny(Module):
 
 
 class DWT_2D(Module):
-    """
+    r"""
     input: the 2D data to be decomposed -- (N, C, H, W)
     output -- lfc: (N, C, H/2, W/2)
               hfc_lh: (N, C, H/2, W/2)
@@ -267,7 +267,7 @@ class DWT_2D(Module):
         self.band_length_half = math.floor(self.band_length / 2)
 
     def get_matrix(self):
-        """
+        r"""
         生成变换矩阵
         generating the matrices: \mathcal{L}, \mathcal{H}
         :return: self.matrix_low = \mathcal{L}, self.matrix_high = \mathcal{H}
@@ -318,7 +318,7 @@ class DWT_2D(Module):
             self.matrix_high_1 = torch.Tensor(matrix_g_1)
 
     def forward(self, input):
-        """
+        r"""
         input_lfc = \mathcal{L} * input * \mathcal{L}^T
         input_hfc_lh = \mathcal{H} * input * \mathcal{L}^T
         input_hfc_hl = \mathcal{L} * input * \mathcal{H}^T
@@ -359,7 +359,7 @@ class IDWT_2D(Module):
         self.band_length_half = math.floor(self.band_length / 2)
 
     def get_matrix(self):
-        """
+        r"""
         生成变换矩阵
         generating the matrices: \mathcal{L}, \mathcal{H}
         :return: self.matrix_low = \mathcal{L}, self.matrix_high = \mathcal{H}
@@ -409,7 +409,7 @@ class IDWT_2D(Module):
             self.matrix_high_1 = torch.Tensor(matrix_g_1)
 
     def forward(self, LL, LH, HL, HH):
-        """
+        r"""
         recontructing the original 2D data
         the original 2D data = \mathcal{L}^T * lfc * \mathcal{L}
                              + \mathcal{H}^T * hfc_lh * \mathcal{L}
@@ -457,7 +457,7 @@ class DWT_3D(Module):
         self.band_length_half = math.floor(self.band_length / 2)
 
     def get_matrix(self):
-        """
+        r"""
         生成变换矩阵
         generating the matrices: \mathcal{L}, \mathcal{H}
         :return: self.matrix_low = \mathcal{L}, self.matrix_high = \mathcal{H}
@@ -561,7 +561,7 @@ class IDWT_3D(Module):
         self.band_length_half = math.floor(self.band_length / 2)
 
     def get_matrix(self):
-        """
+        r"""
         生成变换矩阵
         generating the matrices: \mathcal{L}, \mathcal{H}
         :return: self.matrix_low = \mathcal{L}, self.matrix_high = \mathcal{H}

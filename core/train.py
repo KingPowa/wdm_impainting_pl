@@ -3,7 +3,7 @@ from sklearn.model_selection import KFold
 from pytorch_lightning import Trainer, LightningModule
 from logging import Logger
 
-from ml.core.dataloaders import MRIHoldoutDataLoader, MRIKFoldDataLoader
+from ml.core.dataloaders.mri import MRIDataloader
 from ml.core.configuration import *
 from ml.core.logging import AdvancedWandLogger, AdvancedModelCheckpoint, Session
 
@@ -13,7 +13,7 @@ def cross_validation_split(dataset, n_splits=5):
     splits = list(kfold.split(dataset))
     return splits
 
-def train(model: LightningModule, dataloader: MRIHoldoutDataLoader, session: Session, logger: Logger):
+def train(model: LightningModule, dataloader: MRIDataloader, session: Session, logger: Logger):
     logger.info(f"Starting training of {model._get_name()} - HOLDOUT")
     
     logger.info(f"################## Dataset Description ##################")

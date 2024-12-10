@@ -14,7 +14,7 @@ from torch.optim import Adam
 from typing import List, Tuple, Any, Dict
 from collections.abc import Collection
 from omegaconf import DictConfig, ListConfig
-from ml.core.utils import calculate_output_shape
+from ml.core.utils.utils import calculate_output_shape
 from ml.core.loss import elbo_loss
 from itertools import combinations
 

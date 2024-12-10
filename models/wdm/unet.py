@@ -8,7 +8,7 @@ import torch.nn.functional as F
 from pytorch_lightning import LightningModule
 
 from ml.core.nn_utils import conv_nd, linear, avg_pool_nd, zero_module, normalization, timestep_embedding
-from DWT.DWT_IDWT_layer import DWT_3D, IDWT_3D
+from ml.models.wdm.DWT.DWT_IDWT_layer import DWT_3D, IDWT_3D
 
 
 

@@ -1,10 +1,8 @@
 import torch
+import numpy as np
 from typing import Tuple
 from collections.abc import Collection
 from datetime import datetime
-import numpy as np
-from noise import pnoise2
-from scipy.ndimage import gaussian_filter
 
 def get_timestamp():
     return datetime.timestamp(datetime.now())
@@ -111,48 +109,28 @@ def reparametrize(mu: torch.Tensor, var: torch.Tensor, log=False):
     eps = std.data.new(std.size()).normal_()
     return eps.mul(std).add_(mu)
 
-from scipy.ndimage import gaussian_filter
-
-def generate_perlin_mask_with_contour_smoothing(image_size, scale=100, octaves=4, persistence=0.5, lacunarity=2.0, threshold=0.0, sigma=2.0, seed=123):
+def normalize_image(image: np.ndarray, clip_percentiles=False, pmin=1, pmax=99):
     """
-    Generate a binary mask with smooth contours using Perlin noise.
-
-    Parameters:
-        image_size (tuple): Size of the image (height, width).
-        scale (float): Scale of the noise (higher values zoom out the noise pattern).
-        octaves (int): Number of noise layers blended together for detail.
-        persistence (float): Controls amplitude of octaves (higher = more detail).
-        lacunarity (float): Controls frequency of octaves (higher = more detail).
-        threshold (float): Threshold to create a binary mask.
-        sigma (float): Standard deviation for Gaussian smoothing.
-        seed (int): seed controlling perlin noise generation, for deterministically generate it.
-
-    Returns:
-        np.ndarray: Binary mask (0 or 1) with smooth contours.
+    Function to normalize the images between [0,1]. If percentiles is set to True it clips the intensities at
+     percentile 1 and 99
+    :param image: numpy array containing the image
+    :param clip_percentiles: set to True to clip intensities. (default: False)
+    :param pmin: lower percentile to clip
+    :param pmax: upper percentile to clip
+    :return: normalized image [0,1]
     """
-    height, width = image_size
-    noise_grid = np.zeros((height, width))
-    
-    # Generate Perlin noise
-    for y in range(height):
-        for x in range(width):
-            noise_value = pnoise2(x / scale, 
-                                  y / scale, 
-                                  octaves=octaves, 
-                                  persistence=persistence, 
-                                  lacunarity=lacunarity, 
-                                  repeatx=width, 
-                                  repeaty=height, 
-                                  base=seed)  # Seed for reproducibility
-            noise_grid[y, x] = noise_value
-    
-    # Normalize noise values to range 0-1
-    noise_grid = (noise_grid - noise_grid.min()) / (noise_grid.max() - noise_grid.min())
-    
-    # Apply Gaussian smoothing to the noise grid
-    smoothed_noise = gaussian_filter(noise_grid, sigma=sigma)
-    
-    # Apply threshold to create a binary mask
-    binary_mask = (smoothed_noise > threshold).astype(np.uint8)
-    
-    return binary_mask
+    if clip_percentiles is True:
+        pmin = np.percentile(image, pmin)
+        pmax = np.percentile(image, pmax)
+        v = np.clip(image, pmin, pmax)
+    else:
+        v = image
+
+    v_min = v.min(axis=(0, 1, 2), keepdims=True)
+    v_max = v.max(axis=(0, 1, 2), keepdims=True)
+
+    return (v - v_min) / (v_max - v_min)
+
+def args_to_dict(args, keys):
+    return {k: getattr(args, k) for k in keys}
+

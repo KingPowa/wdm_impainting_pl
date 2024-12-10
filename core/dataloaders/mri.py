@@ -7,57 +7,57 @@ from torch.nn import Module
 from typing import Optional
 from collections.abc import Collection
 
-from ml.core.datasets.datasets import MRIDataset, LMDBDatasetConfig
+from ml.core.datasets.file_based import MedicalDataset
+from ml.core.datasets.mri import MRIDataset
 
 class MRIDataloader(LightningDataModule):
 
     def __init__(self,
-                 config: LMDBDatasetConfig,
+                 dataset: MedicalDataset,
                  max_age: float,
                  min_age: float = 0,
                  seed: int = 11111,
-                 num_workers: int = 15,
                  batch_size: int = 16):
         
         super().__init__()
-        self.save_hyperparameters(logger=False)
+        self.save_hyperparameters(ignore="dataset", logger=False)
 
         self.train_set = None
         self.valid_set = None
         self.test_set = None
+        self.dataset = dataset
 
     def info(self):
         return {
-            "Dataset Name" : self.hparams.config.get_name(),
-            "Modality": self.hparams.config.modality,
+            "Dataset Name" : self.dataset.get_name(),
+            "Modality": self.dataset.modality,
             "Batch Size": self.hparams.batch_size,
             "Seed": self.hparams.seed,
             "Min-Max Age": f"{self.hparams.min_age}-{self.hparams.max_age}"
         }.items()
 
 class MRIHoldoutDataLoader(MRIDataloader):
-    def __init__(self, 
-                config: LMDBDatasetConfig,
-                max_age: float,
-                min_age: float = 0,
-                seed: int = 11111,
-                num_workers: int = 15,
-                batch_size: int = 16,
-                train_holdout=0.7,
-                val_holdout=1):
+    def __init__(self,
+                 dataset: MedicalDataset,
+                 max_age: float,
+                 min_age: float = 0,
+                 seed: int = 11111,
+                 num_workers: int = 15,
+                 batch_size: int = 16,
+                 train_holdout=0.7,
+                 val_holdout=1):
         # Now explicitly call the parent constructor with all parameters
-        super().__init__(config=config, 
+        super().__init__(dataset=dataset, 
                          max_age=max_age, 
                          min_age=min_age, 
                          seed=seed, 
-                         num_workers=num_workers, 
                          batch_size=batch_size)
-        self.save_hyperparameters(logger=False)
+        self.save_hyperparameters(ignore="dataset", logger=False)
         
 
     def setup(self, stage=None):
         if not self.train_set and not self.valid_set:
-            self.dataset = MRIDataset(self.hparams.config, self.hparams.max_age, self.hparams.min_age)
+            self.dataset = MRIDataset(self.dataset, self.hparams.max_age, self.hparams.min_age)
             self.train_set, valid_set = random_split(self.dataset, [self.hparams.train_holdout, 1-self.hparams.train_holdout], generator=Generator().manual_seed(self.hparams.seed))
             self.valid_set, self.test_set = random_split(valid_set, [self.hparams.val_holdout, 1-self.hparams.val_holdout])
 
@@ -74,7 +74,7 @@ class MRIHoldoutDataLoader(MRIDataloader):
 class MRIKFoldDataLoader(MRIDataloader):
 
     def __init__(self, 
-                 config: LMDBDatasetConfig,
+                 dataset: MedicalDataset,
                  max_age: float,
                  min_age: float = 0,
                  seed: int = 11111,
@@ -84,7 +84,7 @@ class MRIKFoldDataLoader(MRIDataloader):
                  folds = 10):
         
         # Now explicitly call the parent constructor with all parameters
-        super().__init__(config=config, 
+        super().__init__(dataset=dataset, 
                          max_age=max_age, 
                          min_age=min_age, 
                          seed=seed, 
@@ -94,17 +94,17 @@ class MRIKFoldDataLoader(MRIDataloader):
 
         self.k = k
         self.folds = folds
-        self.save_hyperparameters(logger=False)
+        self.save_hyperparameters(ignore="dataset", logger=False)
 
     def setup(self, stage=None):
         if not self.train_set and not self.valid_set:
-            dataset = MRIDataset(self.hparams.config, self.hparams.max_age, self.hparams.min_age)
+            dataset = MRIDataset(dataset, self.hparams.max_age, self.hparams.min_age)
             self.train_set, valid_set = random_split(dataset, [self.hparams.train_holdout, 1-self.hparams.train_holdout], generator=Generator().manual_seed(self.hparams.seed))
             self.valid_set, self.test_set = random_split(valid_set, [self.hparams.val_holdout, 1-self.hparams.val_holdout])
     
     def setup(self, stage=None):
         if not self.data_train and not self.data_val:
-            dataset = MRIDataset(self.hparams.config, self.hparams.max_age, self.hparams.min_age)
+            dataset = MRIDataset(dataset, self.hparams.max_age, self.hparams.min_age)
 
             # choose fold to train on
             kf = KFold(n_splits=self.hparams.folds, shuffle=True, random_state=self.hparams.seed)
