@@ -51,7 +51,7 @@ class MRIMaskedDataset(MRIDataset):
         self.mask_config = mask_config
         self.length = self.length * mask_config.per_sample
 
-    def __getitem__(self, index: int):
+    def __getitem__(self, index: int) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         slice, cond = self.get_sample(index // self.mask_config.per_sample)
         slice_shape = slice.shape # (H, W)
         # mask = np.zeros((1))
@@ -67,6 +67,7 @@ class MRIMaskedDataset(MRIDataset):
 
         image = torch.from_numpy(slice).float()
         image = self.mtransforms(image)
+        mask = torch.from_numpy(mask).float()
         return image.unsqueeze(0), mask, cond
 
         

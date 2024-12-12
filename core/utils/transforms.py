@@ -59,7 +59,7 @@ class VolumeAdapter:
         # Resize the volume
         resized_volume = zoom(volume, 
                               zoom=[1 for _ in volume.shape[:-3]] + [scale_depth, scale_height, scale_width], 
-                              order=2)  # Using cubic interpolation
+                              order=3)  # Using cubic interpolation
         
         # Get the new depth
         new_depth = resized_volume.shape[0]

@@ -7,7 +7,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from pytorch_lightning import LightningModule
 
-from ml.core.nn_utils import conv_nd, linear, avg_pool_nd, zero_module, normalization, timestep_embedding
+from ml.core.nn_utils import conv_nd, linear, avg_pool_nd, zero_module, normalization, timestep_embedding, checkpoint
 from ml.models.wdm.DWT.DWT_IDWT_layer import DWT_3D, IDWT_3D
 
 
@@ -768,8 +768,8 @@ class UNetModel(LightningModule):
         assert (y is not None) == (
             self.num_classes is not None
         ), "must specify y if and only if the model is class-conditional"
-        assert x.device == self.devices[0], f"{x.device=} does not match {self.devices[0]=}"
-        assert timesteps.device == self.devices[0], f"{timesteps.device=} does not match {self.devices[0]=}"
+        # assert x.device == self.devices[0], f"{x.device=} does not match {self.devices[0]=}"
+        # assert timesteps.device == self.devices[0], f"{timesteps.device=} does not match {self.devices[0]=}"
 
         hs = []
         emb = self.time_embed(timestep_embedding(timesteps, self.model_channels))
@@ -1051,3 +1051,4 @@ class EncoderUNetModel(nn.Module):
             h = h.type(x.dtype)
             self.cam_feature_maps = h
             return self.out(h)
+

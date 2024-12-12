@@ -15,9 +15,9 @@ def diffusion_defaults():
         predict_xstart=False,
         rescale_timesteps=False,
         rescale_learned_sigmas=False,
-        dims=2,
+        dims=3,
         num_groups=32,
-        in_channels=1,
+        in_channels=8,
     )
 
 def model_and_diffusion_defaults():
@@ -39,9 +39,9 @@ def model_and_diffusion_defaults():
         resblock_updown=True,
         use_fp16=False,
         use_new_attention_order=False,
-        dims=2,
+        dims=3,
         num_groups=32,
-        in_channels=1,
+        in_channels=8,
         out_channels=0,  # automatically determine if 0
         bottleneck_attention=True,
         resample_2d=True,
